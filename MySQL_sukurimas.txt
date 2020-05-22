@@ -1,0 +1,123 @@
+create schema dienynas;
+
+drop table stores;
+create table stores (`id` INT AUTO_INCREMENT NOT NULL, 
+                     `name` varchar(100) NOT NULL, 
+                     `address` varchar(200) NOT NULL, 
+                     PRIMARY KEY (`id`)
+                     ) ENGINE=InnoDB DEFAULT CHARSET=`UTF8MB4` AUTO_INCREMENT=1 ;
+
+insert into stores (`name`, address) 
+				values   ('Ermitažas', 'Trumpoji g. 4, Trakai'),
+						 ('Maksima', 'Įšėčų g. 6, Ilgosios lovos km. Rokiškio raj.'),
+						 ('IKI', 'Čiūdų g. 7, Šveicarija'),
+                         ('Rimi', 'Baravykų g. 8, Grybų km.'),
+						 ('Aibė', 'Vytauto g. 9, Petruškos');
+
+
+drop table products;
+create table products ( 
+                         id INT AUTO_INCREMENT NOT NULL, 
+                         name varchar(100), 
+                         description text,
+                          PRIMARY KEY (`id`)
+                        ) ENGINE=InnoDB DEFAULT CHARSET=`UTF8MB4` AUTO_INCREMENT=1;
+						
+insert into products values 
+                         (1, 'Kankorėžių lukštenimo aparatas', 'Labai gerai lukštena pužų, eglių, maumedžių ir kitus kankorėžius'), 
+                         (2, 'Prekė2', 'Labai smulkus aprašymas 2 prekės'), 
+                         (3, 'Prekė3', 'Labai smulkus aprašymas 3 prekės'),
+						 (4, 'Prekė4', 'Labai smulkus aprašymas 4 prekės'),
+						 (5, 'Prekė5', 'Labai smulkus aprašymas 5 prekės'),
+						 (6, 'Prekė6', 'Labai smulkus aprašymas 6 prekės'),
+                         (7, 'Prekė7', 'Labai smulkus aprašymas 7 prekės'), 
+                         (8, 'Prekė8', 'Labai smulkus aprašymas 8 prekės'),
+						 (9, 'Prekė9', 'Labai smulkus aprašymas 9 prekės'),
+						 (10, 'Prekė10', 'Labai smulkus aprašymas 10 prekės'),
+						 (11, 'Prekė11', 'Labai smulkus aprašymas 11 prekės'),
+                         (12, 'Prekė12', 'Labai smulkus aprašymas 12 prekės'), 
+                         (13, 'Prekė13', 'Labai smulkus aprašymas 13 prekės'),
+						 (14, 'Prekė14', 'Labai smulkus aprašymas 14 prekės'),
+						 (15, 'Prekė15', 'Labai smulkus aprašymas 15 prekės');
+        
+
+
+drop table products_in_stores;                         
+CREATE TABLE products_in_stores (
+product_id INT NOT NULL REFERENCES products,
+store_id INT NOT NULL  REFERENCES stores,
+price DECIMAL(10,2) NOT NULL,
+quantity INT NOT NULL,
+ FOREIGN KEY(product_id) REFERENCES products(id),
+ FOREIGN KEY(store_id) REFERENCES stores(id),
+PRIMARY KEY (product_id, store_id)
+);
+SET FOREIGN_KEY_CHECKS=0;
+
+
+INSERT INTO products_in_stores VALUES 
+						(1, 1, 9.99, 51),
+                        (2, 1, 19.99, 52),
+                        (3, 1, 29.99, 53),
+                        (4, 1, 39.99, 54),
+                        (5, 1, 49.99, 55),
+                        (6, 1, 59.99, 56),
+                        (7, 1, 69.99, 57),
+                        (15, 2, 0.10, 1),
+                        (14, 2, 0.20, 2),
+                        (13, 2, 0.30, 3),
+                        (1, 3, 1.01, 101),
+                        (2, 3, 1.02, 102),
+                        (12, 3, 1.03, 103),
+                        (11, 3, 1.04, 104),
+                        (7, 4, 5.99, 59),
+                        (10, 4, 6.99, 69),
+                        (17, 1, 9.99, 99),
+                        (18, 4, 9.99, 99),
+                        (1, 4, 9.99, 99),
+                        (2, 4, 9.99, 99),
+                        (8, 4, 9.99, 99),
+                        (9, 4, 9.99, 99),
+                        (15, 1, 9.99, 99),
+                        (14, 1, 9.99, 99),
+                        (13, 1, 9.99, 99),
+                        (12, 1, 9.99, 99);
+						
+						
+	-- 1. Suskaičiuokite kiek iš viso lentelėje yra prekių(kiek įrašų yra lentelėje products)
+	SELECT COUNT(*) FROM products; 
+        
+	-- 2.Išveskite visas prekes esančias atitinkamose parduotuvėse. Išvedamas sąrašas turi būti toks:
+	-- parduotuvės pavadinimas, prekės pavadinimas, kaina).
+	SELECT s.`name` "Parduotuvės pavadinimas", p.`name` "Prekės pavadinimas", ps.price "Kaina" 
+       	FROM dienynas.products_in_stores ps
+	LEFT JOIN stores s ON s.id = ps.store_id 
+	LEFT JOIN products p ON p.id = ps.product_id
+	WHERE p.`name` IS NOT null
+       	ORDER BY s.`name`;
+       
+	-- 3.Išveskite kiek kiekvienoje parduotuvėje yra prekių. Išvedamas sąrašas turi būti toks: 
+    	-- parduotuvės pavadinimas, adresas, prekių kiekis).
+    	-- Turi būti išvestos parduotuvės ir neturinčios prekių.
+	SELECT s.`name` "Parduotuvės pavadinimas", s.address Adresas, COUNT(NULLIF(quantity,'')) "Prekių kiekis" 
+      	FROM dienynas.products_in_stores ps
+	RIGHT JOIN stores s ON s.id = ps.store_id 
+	GROUP BY s.`name` ;
+	
+	-- 4.Išveskite visas parduotuves ir jose esančių prekių sumą, t.y. kiek kainuotų visos prekės esančios parduotuvėje.
+        -- Išvedamas sąrašas turi būti toks: parduotuvės pavadinimas, adresas, sandėlio suma.
+	SELECT s.`name` "Parduotuvės pavadinimas", s.address Adresas, IFNULL(SUM(quantity * price), 0)  "Sandėlio suma" 
+        FROM dienynas.products_in_stores ps
+	RIGHT JOIN stores s ON s.id = ps.store_id 
+	GROUP BY s.`name`;
+	
+	-- 5.Išveskite tas parduotuves kuriose yra mažiau nei po 4 prekes.
+	SELECT s.`name` "Parduotuvės pavadinimas", COUNT(NULLIF(quantity,'')) AS Kiekis 
+        FROM dienynas.products_in_stores ps
+	RIGHT JOIN stores s ON s.id = ps.store_id 
+        GROUP BY s.`name`
+        HAVING Kiekis < 4 ;
+                        
+INSERT INTO stores(name, address) VALUES('Maxima','Balbieriškis'),('Rimi','Ariogala'),('Iki','Babtai'),('Aibė','Grikiškės'),('Senukai','Garliava'); 
+INSERT INTO products(name, description) VALUES ('Duona',NULL),('Pienas','Ekologiškas pienas'),('Sūris',NULL),('Varškė',NULL),('Alus',NULL),('Vanduo',NULL),('Dešra',NULL),('Skilandis',NULL),('Salotos',NULL);   
+INSERT INTO products_in_stores(product_id, store_id, price, quantity) VALUES (1, 2, 2.50, 2),(2, 2, 2.00, 5),(1, 3, 1.50, 4),(2, 3, 0.50, 3),(3, 3, 3.50, 1),(1, 4, 1.50, 2),(2, 4, 2.50, 2),(3, 4, 3.50, 1),(4, 4, 5.50, 1),(5, 4, 4.50, 1),(6, 4, 6.50, 1),(6, 5, 5.50, 2),(7, 5, 3.50, 4);                        
