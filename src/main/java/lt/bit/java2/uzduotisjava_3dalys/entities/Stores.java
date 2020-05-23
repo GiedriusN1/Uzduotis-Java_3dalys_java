@@ -1,4 +1,4 @@
 package lt.bit.java2.uzduotisjava_3dalys.entities;
 
-public class Store {
+public class Stores {
 }
